@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Hello from './Hello';
 import Wrapper from './Wrapper';
 import Counter from './Counter';
@@ -18,13 +18,16 @@ function App() {
     email: '',
   });
   const { username, email } = inputs;
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setInputs({
-      ...inputs,
-      [name]: value,
-    });
-  };
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setInputs({
+        ...inputs,
+        [name]: value,
+      });
+    },
+    [inputs]
+  );
   const [users, setUsers] = useState<UserEntity[]>([
     {
       id: 1,
@@ -46,7 +49,7 @@ function App() {
     },
   ]);
   const nextId = useRef(4);
-  const onCreate = () => {
+  const onCreate = useCallback(() => {
     const user: UserEntity = {
       id: nextId.current,
       username,
@@ -60,17 +63,23 @@ function App() {
       email: '',
     });
     nextId.current += 1;
-  };
-  const onRemove = (id: number) => {
-    setUsers(users.filter((user) => user.id !== id));
-  };
-  const onToggle = (id: number) => {
-    setUsers(
-      users.map((user) =>
-        user.id === id ? { ...user, active: !user.active } : user
-      )
-    );
-  };
+  }, [users, username, email]);
+  const onRemove = useCallback(
+    (id: number) => {
+      setUsers(users.filter((user) => user.id !== id));
+    },
+    [users]
+  );
+  const onToggle = useCallback(
+    (id: number) => {
+      setUsers(
+        users.map((user) =>
+          user.id === id ? { ...user, active: !user.active } : user
+        )
+      );
+    },
+    [users]
+  );
 
   const name = 'react';
   const style = {
