@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import Hello from './Hello';
 import Wrapper from './Wrapper';
 import Counter from './Counter';
@@ -12,20 +18,17 @@ function countActiveUsers(users: UserEntity[]) {
   return users.filter((user) => user.active).length;
 }
 
-function App() {
-  const [inputs, setInputs] = useState({
+type State = {
+  inputs: Pick<UserEntity, 'username' | 'email'>;
+  users: UserEntity[];
+};
+
+const initialState: State = {
+  inputs: {
     username: '',
     email: '',
-  });
-  const { username, email } = inputs;
-  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setInputs((inputs) => ({
-      ...inputs,
-      [name]: value,
-    }));
-  }, []);
-  const [users, setUsers] = useState<UserEntity[]>([
+  },
+  users: [
     {
       id: 1,
       username: 'velopert',
@@ -44,7 +47,59 @@ function App() {
       email: 'liz@example.com',
       active: false,
     },
-  ]);
+  ],
+};
+
+type Action =
+  | { type: 'CHANGE_INPUT'; name: string; value: string }
+  | { type: 'CREATE_USER'; user: UserEntity }
+  | { type: 'REMOVE_USER'; id: number }
+  | { type: 'TOGGLE_USER'; id: number };
+
+function reducer(state = initialState, action: Action) {
+  switch (action.type) {
+    case 'CHANGE_INPUT':
+      return {
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value,
+        },
+      };
+    case 'CREATE_USER':
+      return {
+        inputs: initialState.inputs,
+        users: [...state.users, action.user],
+      };
+    case 'REMOVE_USER':
+      return {
+        ...state,
+        users: state.users.filter((user) => user.id !== action.id),
+      };
+    case 'TOGGLE_USER':
+      return {
+        ...state,
+        users: state.users.map((user) =>
+          user.id === action.id ? { ...user, active: !user.active } : user
+        ),
+      };
+    default:
+      return state;
+  }
+}
+
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const {
+    users,
+    inputs: { username, email },
+  } = state;
+
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    dispatch({ type: 'CHANGE_INPUT', name, value });
+  }, []);
   const nextId = useRef(4);
   const onCreate = useCallback(() => {
     const user: UserEntity = {
@@ -53,23 +108,15 @@ function App() {
       email,
       active: false,
     };
-    setUsers((users) => [...users, user]);
 
-    setInputs({
-      username: '',
-      email: '',
-    });
+    dispatch({ type: 'CREATE_USER', user });
     nextId.current += 1;
   }, [username, email]);
   const onRemove = useCallback((id: number) => {
-    setUsers((users) => users.filter((user) => user.id !== id));
+    dispatch({ type: 'REMOVE_USER', id });
   }, []);
   const onToggle = useCallback((id: number) => {
-    setUsers((users) =>
-      users.map((user) =>
-        user.id === id ? { ...user, active: !user.active } : user
-      )
-    );
+    dispatch({ type: 'TOGGLE_USER', id });
   }, []);
 
   const name = 'react';
