@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 type Inputs = {
   name: string;
@@ -7,6 +7,8 @@ type Inputs = {
 
 function InputSample() {
   const [inputs, setInputs] = useState<Inputs>({ name: '', nickname: '' });
+  const nameInput = useRef<HTMLInputElement>(null);
+
   const { name, nickname } = inputs;
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,11 +25,18 @@ function InputSample() {
       name: '',
       nickname: '',
     });
+    nameInput.current?.focus();
   };
 
   return (
     <div>
-      <input name="name" placeholder="이름" onChange={onChange} value={name} />
+      <input
+        name="name"
+        placeholder="이름"
+        onChange={onChange}
+        value={name}
+        ref={nameInput}
+      />
       <input
         name="nickname"
         placeholder="닉네임"
