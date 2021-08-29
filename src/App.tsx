@@ -6,6 +6,7 @@ import InputSample from './InputSample';
 import UserList, { UserEntity } from './UserList';
 import CreateUser from './CreateUser';
 import './App.css';
+import produce from 'immer';
 
 function countActiveUsers(users: UserEntity[]) {
   console.log('사용자를 세는중...');
@@ -48,21 +49,24 @@ type Action =
 function reducer(state = initialState, action: Action) {
   switch (action.type) {
     case 'CREATE_USER':
-      return {
-        users: [...state.users, action.user],
-      };
+      return produce(state, (draft) => {
+        draft.users.push(action.user);
+      });
     case 'REMOVE_USER':
-      return {
-        ...state,
-        users: state.users.filter((user) => user.id !== action.id),
-      };
+      return produce(state, (draft) => {
+        const index = draft.users.findIndex((user) => user.id === action.id);
+        draft.users.splice(index, 1);
+      });
     case 'TOGGLE_USER':
-      return {
-        ...state,
-        users: state.users.map((user) =>
-          user.id === action.id ? { ...user, active: !user.active } : user
-        ),
-      };
+      return produce(state, (draft) => {
+        const user = draft.users.find((user) => user.id === action.id);
+
+        if (!user) {
+          return;
+        }
+
+        user.active = !user.active;
+      });
     default:
       return state;
   }
