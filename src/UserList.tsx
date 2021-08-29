@@ -13,7 +13,7 @@ type UserProps = {
   onToggle(id: number): void;
 };
 
-function User({ user, onRemove, onToggle }: UserProps) {
+const User = React.memo(function ({ user, onRemove, onToggle }: UserProps) {
   useEffect(() => {
     console.log('USER COMPONENT');
 
@@ -44,7 +44,7 @@ function User({ user, onRemove, onToggle }: UserProps) {
       <button onClick={() => onRemove(user.id)}>삭제</button>
     </div>
   );
-}
+});
 
 type UserListProps = {
   users: UserEntity[];
@@ -67,4 +67,4 @@ function UserList({ users, onRemove, onToggle }: UserListProps) {
   );
 }
 
-export default UserList;
+export default React.memo(UserList);
