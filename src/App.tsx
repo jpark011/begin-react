@@ -5,6 +5,7 @@ import Counter from './Counter';
 import InputSample from './InputSample';
 import UserList, { UserEntity } from './UserList';
 import CreateUser from './CreateUser';
+import ErrorBoundary from './ErrorBoundary';
 import './App.css';
 import produce from 'immer';
 
@@ -92,7 +93,7 @@ function App() {
   const count = useMemo(() => countActiveUsers(users), [users]);
 
   return (
-    <>
+    <ErrorBoundary>
       <Wrapper>
         <Hello />
         <Hello isSpecial name={name} />
@@ -110,7 +111,7 @@ function App() {
         <UserList users={users}></UserList>
         <div>활성사용자 수: {count}</div>
       </UserDispatch.Provider>
-    </>
+    </ErrorBoundary>
   );
 }
 
