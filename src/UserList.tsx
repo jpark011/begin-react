@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export type UserEntity = {
   id: number;
@@ -14,6 +14,21 @@ type UserProps = {
 };
 
 function User({ user, onRemove, onToggle }: UserProps) {
+  useEffect(() => {
+    console.log('USER COMPONENT');
+
+    return () => {
+      console.log('USER COMPONENT DESTROYED');
+    };
+  }, []);
+  useEffect(() => {
+    console.log('USER CHANGED', user);
+
+    return () => {
+      console.log('USER ABOUT TO CHANGE', user);
+    };
+  }, [user]);
+
   return (
     <div>
       <b
