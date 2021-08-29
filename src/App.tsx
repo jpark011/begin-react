@@ -12,6 +12,7 @@ import InputSample from './InputSample';
 import UserList, { UserEntity } from './UserList';
 import CreateUser from './CreateUser';
 import './App.css';
+import { useInputs } from './hooks/useInputs';
 
 function countActiveUsers(users: UserEntity[]) {
   console.log('사용자를 세는중...');
@@ -19,15 +20,10 @@ function countActiveUsers(users: UserEntity[]) {
 }
 
 type State = {
-  inputs: Pick<UserEntity, 'username' | 'email'>;
   users: UserEntity[];
 };
 
 const initialState: State = {
-  inputs: {
-    username: '',
-    email: '',
-  },
   users: [
     {
       id: 1,
@@ -58,17 +54,8 @@ type Action =
 
 function reducer(state = initialState, action: Action) {
   switch (action.type) {
-    case 'CHANGE_INPUT':
-      return {
-        ...state,
-        inputs: {
-          ...state.inputs,
-          [action.name]: action.value,
-        },
-      };
     case 'CREATE_USER':
       return {
-        inputs: initialState.inputs,
         users: [...state.users, action.user],
       };
     case 'REMOVE_USER':
@@ -90,17 +77,14 @@ function reducer(state = initialState, action: Action) {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const {
-    users,
-    inputs: { username, email },
-  } = state;
-
-  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    dispatch({ type: 'CHANGE_INPUT', name, value });
-  }, []);
+  const [{ username, email }, onChange, reset] = useInputs({
+    username: '',
+    email: '',
+  });
   const nextId = useRef(4);
+
+  const { users } = state;
+
   const onCreate = useCallback(() => {
     const user: UserEntity = {
       id: nextId.current,
@@ -109,9 +93,10 @@ function App() {
       active: false,
     };
 
+    reset();
     dispatch({ type: 'CREATE_USER', user });
     nextId.current += 1;
-  }, [username, email]);
+  }, [username, email, reset]);
   const onRemove = useCallback((id: number) => {
     dispatch({ type: 'REMOVE_USER', id });
   }, []);
